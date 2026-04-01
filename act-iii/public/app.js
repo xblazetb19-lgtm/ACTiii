@@ -89,12 +89,13 @@ function showApp() {
 async function authLogin() {
   const email = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
-  const msg = document.getElementById('auth-message');
+  const msg = document.getElementById('auth-message-login');
   msg.textContent = '';
   msg.className = 'auth-message';
 
   if (!email || !password) { msg.textContent = 'Remplissez tous les champs.'; return; }
 
+  msg.textContent = 'Connexion…';
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) { msg.textContent = error.message; }
 }
@@ -103,13 +104,14 @@ async function authRegister() {
   const name = document.getElementById('reg-name').value.trim();
   const email = document.getElementById('reg-email').value.trim();
   const password = document.getElementById('reg-password').value;
-  const msg = document.getElementById('auth-message');
+  const msg = document.getElementById('auth-message-register');
   msg.textContent = '';
   msg.className = 'auth-message';
 
   if (!name || !email || !password) { msg.textContent = 'Remplissez tous les champs.'; return; }
   if (password.length < 6) { msg.textContent = 'Mot de passe trop court (min 6 chars).'; return; }
 
+  msg.textContent = 'Création du compte…';
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) { msg.textContent = error.message; return; }
 
@@ -123,7 +125,7 @@ async function authRegister() {
   });
 
   msg.className = 'auth-message success';
-  msg.textContent = '✅ Compte créé ! Vérifiez votre email si nécessaire.';
+  msg.textContent = '✅ Compte créé ! Connectez-vous maintenant.';
 }
 
 async function authLogout() {

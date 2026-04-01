@@ -1,21 +1,20 @@
 /* ══════════════════════════════════════════
-   ACT-III — app.js
-   Full-stack music streaming app with Supabase
+   ACT-III — app.js (Version Sans Email)
 ══════════════════════════════════════════ */
 
 // ─────────────────────────────────────────
-// ⚙️  CONFIG — Replace with your Supabase URL & anon key
+// ⚙️  CONFIG
 // ─────────────────────────────────────────
 const SUPABASE_URL = 'https://dkgthznjxzahhtchczaz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_pgbAofMYMwwQAQeiPkdyiw_v0DvvOrx';
 
-const supabase = supabase_js.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Utilisation de 'supabase' car c'est le nom défini par le CDN dans ton index.html
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ─────────────────────────────────────────
 // 🌐 GLOBAL STATE
 // ─────────────────────────────────────────
 let currentUser = null;
-let currentProfile = null;
 let currentQueue = [];
 let currentIndex = -1;
 let isPlaying = false;
@@ -24,122 +23,74 @@ let allAlbums = [];
 let allArtists = [];
 let favSongIds = new Set();
 let favAlbumIds = new Set();
-let userPlaylists = [];
-let chartTopSongs = null;
-let chartDaily = null;
-let searchTimeout = null;
 
 // ─────────────────────────────────────────
-// 🚀 INIT
+// 🚀 INIT & CONNEXION PSEUDO
 // ─────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', async () => {
-  // Auth state listener
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (session?.user) {
-      currentUser = session.user;
-      await loadUserProfile();
-      showApp();
-    } else {
-      currentUser = null;
-      currentProfile = null;
-      showAuth();
-    }
-  });
-
-  // Check existing session
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session?.user) {
-    currentUser = session.user;
-    await loadUserProfile();
+document.addEventListener('DOMContentLoaded', () => {
+  const loginBtn = document.getElementById('btn-enter');
+  
+  // 1. Vérifier si une session existe déjà dans le navigateur
+  const savedUser = localStorage.getItem('act3_user');
+  if (savedUser) {
+    currentUser = JSON.parse(savedUser);
     showApp();
-  } else {
-    showAuth();
   }
 
-  // Navigation
+  // 2. Gérer le clic sur le bouton "Entrer"
+  if (loginBtn) {
+    loginBtn.addEventListener('click', () => {
+      const username = document.getElementById('login-username').value.trim();
+      const code = document.getElementById('login-code').value.trim();
+
+      if (username && code) {
+        // On crée un profil utilisateur basé sur le pseudo
+        currentUser = { 
+          id: username.toLowerCase().replace(/\s+/g, '_'), 
+          username: username, 
+          code: code 
+        };
+        
+        localStorage.setItem('act3_user', JSON.stringify(currentUser));
+        showApp();
+      } else {
+        alert("Remplis ton pseudo et ton code !");
+      }
+    });
+  }
+
+  // Navigation (Garder tes écouteurs existants)
   document.querySelectorAll('[data-page]').forEach(btn => {
     btn.addEventListener('click', () => navigateTo(btn.dataset.page));
   });
 
-  // Auth tabs
-  document.querySelectorAll('.auth-tab').forEach(tab => {
-    tab.addEventListener('click', () => switchAuthTab(tab.dataset.tab));
-  });
-
-  // Library tabs
   document.querySelectorAll('.lib-tab').forEach(tab => {
     tab.addEventListener('click', () => switchLibTab(tab.dataset.lib));
   });
 });
 
 // ─────────────────────────────────────────
-// 🔐 AUTH
+// 🔐 AUTH (SIMPLIFIÉ)
 // ─────────────────────────────────────────
-function showAuth() {
-  document.getElementById('auth-screen').classList.remove('hidden');
-  document.getElementById('app').classList.add('hidden');
-}
-
 function showApp() {
-  document.getElementById('auth-screen').classList.add('hidden');
+  // Masquer l'écran de login et afficher l'app
+  document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app').classList.remove('hidden');
-  initApp();
+  
+  // Mettre à jour l'interface avec les infos du pseudo
+  document.getElementById('greeting-name').textContent = currentUser.username;
+  document.getElementById('profile-name').textContent = currentUser.username;
+  document.getElementById('profile-code').textContent = currentUser.code;
+  const avatar = document.getElementById('profile-avatar');
+  if(avatar) avatar.textContent = currentUser.username.charAt(0).toUpperCase();
+
+  initApp(); // Lance le chargement de la musique
 }
 
-async function authLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const msg = document.getElementById('auth-message-login');
-  msg.textContent = '';
-  msg.className = 'auth-message';
-
-  if (!email || !password) { msg.textContent = 'Remplissez tous les champs.'; return; }
-
-  msg.textContent = 'Connexion…';
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) { msg.textContent = error.message; }
+function authLogout() {
+  localStorage.removeItem('act3_user');
+  window.location.reload();
 }
-
-async function authRegister() {
-  const name = document.getElementById('reg-name').value.trim();
-  const email = document.getElementById('reg-email').value.trim();
-  const password = document.getElementById('reg-password').value;
-  const msg = document.getElementById('auth-message-register');
-  msg.textContent = '';
-  msg.className = 'auth-message';
-
-  if (!name || !email || !password) { msg.textContent = 'Remplissez tous les champs.'; return; }
-  if (password.length < 6) { msg.textContent = 'Mot de passe trop court (min 6 chars).'; return; }
-
-  msg.textContent = 'Création du compte…';
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) { msg.textContent = error.message; return; }
-
-  // Create profile
-  const accessCode = 'ACT3-' + Math.random().toString(36).substring(2, 6).toUpperCase();
-  await supabase.from('profiles').insert({
-    user_id: data.user.id,
-    display_name: name,
-    access_code: accessCode,
-    stats_json: {}
-  });
-
-  msg.className = 'auth-message success';
-  msg.textContent = '✅ Compte créé ! Connectez-vous maintenant.';
-}
-
-async function authLogout() {
-  await supabase.auth.signOut();
-}
-
-function switchAuthTab(tab) {
-  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
-  document.querySelector(`.auth-tab[data-tab="${tab}"]`).classList.add('active');
-  document.getElementById(`auth-${tab}`).classList.add('active');
-  document.getElementById('auth-message').textContent = '';
-}
-
 // ─────────────────────────────────────────
 // 👤 USER PROFILE
 // ─────────────────────────────────────────

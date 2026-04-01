@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Act-III</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ══════════════════ AUTH SCREEN ══════════════════ -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-bg">
+    <div class="auth-orb orb1"></div>
+    <div class="auth-orb orb2"></div>
+    <div class="auth-orb orb3"></div>
+  </div>
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="logo-act">ACT</span><span class="logo-dash">—</span><span class="logo-iii">III</span>
+    </div>
+    <p class="auth-tagline">Your music. Your story.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-tab="login">Connexion</button>
+      <button class="auth-tab" data-tab="register">Inscription</button>
+    </div>
+
+    <div id="auth-login" class="auth-form active">
+      <input type="email" id="login-email" class="auth-input" placeholder="Email" />
+      <input type="password" id="login-password" class="auth-input" placeholder="Mot de passe" />
+      <button class="btn-primary" onclick="authLogin()">Se connecter</button>
+    </div>
+
+    <div id="auth-register" class="auth-form">
+      <input type="text" id="reg-name" class="auth-input" placeholder="Nom d'affichage" />
+      <input type="email" id="reg-email" class="auth-input" placeholder="Email" />
+      <input type="password" id="reg-password" class="auth-input" placeholder="Mot de passe" />
+      <button class="btn-primary" onclick="authRegister()">Créer mon compte</button>
+    </div>
+
+    <div id="auth-message" class="auth-message"></div>
+  </div>
+</div>
+
+<!-- ══════════════════ APP ══════════════════ -->
+<div id="app" class="app hidden">
+
+  <!-- SIDEBAR (desktop) -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-act">ACT</span><span class="logo-dash">—</span><span class="logo-iii">III</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="home">
+        <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg>
+        Accueil
+      </button>
+      <button class="nav-item" data-page="search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Recherche
+      </button>
+      <button class="nav-item" data-page="library">
+        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        Bibliothèque
+      </button>
+      <button class="nav-item" data-page="profile">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profil
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="authLogout()">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content" id="main-content">
+
+    <!-- HOME PAGE -->
+    <div id="page-home" class="page active">
+      <div class="page-header">
+        <h1 class="page-title">Bonne écoute, <span id="greeting-name">ami</span> 👋</h1>
+        <p class="page-subtitle">Découvrez ce qui tourne en ce moment</p>
+      </div>
+      <section class="section">
+        <h2 class="section-title">Artistes récents</h2>
+        <div class="cards-grid" id="home-artists"></div>
+      </section>
+      <section class="section">
+        <h2 class="section-title">Albums à découvrir</h2>
+        <div class="cards-grid" id="home-albums"></div>
+      </section>
+      <section class="section">
+        <h2 class="section-title">Titres populaires</h2>
+        <div class="song-list" id="home-songs"></div>
+      </section>
+    </div>
+
+    <!-- SEARCH PAGE -->
+    <div id="page-search" class="page">
+      <div class="page-header">
+        <h1 class="page-title">Recherche</h1>
+        <div class="search-bar-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input type="text" id="search-input" class="search-bar" placeholder="Artistes, albums, titres…" oninput="handleSearch(this.value)" />
+        </div>
+      </div>
+      <div id="search-results">
+        <div class="search-placeholder">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <p>Tapez pour rechercher</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIBRARY PAGE -->
+    <div id="page-library" class="page">
+      <div class="page-header">
+        <h1 class="page-title">Bibliothèque</h1>
+      </div>
+      <div class="library-tabs">
+        <button class="lib-tab active" data-lib="playlists">Playlists</button>
+        <button class="lib-tab" data-lib="fav-songs">Titres</button>
+        <button class="lib-tab" data-lib="fav-albums">Albums</button>
+      </div>
+
+      <!-- PLAYLISTS -->
+      <div id="lib-playlists" class="lib-panel active">
+        <button class="btn-create-playlist" onclick="openCreatePlaylist()">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          Nouvelle playlist
+        </button>
+        <div class="song-list" id="playlists-list"></div>
+      </div>
+
+      <!-- FAV SONGS -->
+      <div id="lib-fav-songs" class="lib-panel">
+        <div class="song-list" id="fav-songs-list"></div>
+      </div>
+
+      <!-- FAV ALBUMS -->
+      <div id="lib-fav-albums" class="lib-panel">
+        <div class="cards-grid" id="fav-albums-list"></div>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="page-profile" class="page">
+      <div class="page-header">
+        <div class="profile-header">
+          <div class="profile-avatar" id="profile-avatar">A</div>
+          <div>
+            <h1 class="page-title" id="profile-name">Utilisateur</h1>
+            <p class="access-code" id="profile-code">ACT3-XXXX</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <section class="section">
+        <h2 class="section-title">Mes stats</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="stat-minutes">0</div>
+            <div class="stat-label">minutes écoutées</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-likes">0</div>
+            <div class="stat-label">titres likés</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="stat-genre">—</div>
+            <div class="stat-label">genre dominant</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BADGES -->
+      <section class="section">
+        <h2 class="section-title">Badges</h2>
+        <div class="badges-grid" id="badges-grid"></div>
+      </section>
+
+      <!-- TIER LIST -->
+      <section class="section">
+        <h2 class="section-title">Tier List Artistes</h2>
+        <div class="tier-list" id="tier-list"></div>
+      </section>
+
+      <!-- MONTHLY RECAP -->
+      <section class="section">
+        <h2 class="section-title">Monthly Recap</h2>
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Top 5 titres</h3>
+            <canvas id="chart-top-songs"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Écoutes par jour</h3>
+            <canvas id="chart-daily"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <!-- ADD CONTENT -->
+      <section class="section">
+        <h2 class="section-title">Ajouter du contenu</h2>
+        <div class="add-content-grid">
+          <button class="btn-add" onclick="openAddArtist()">+ Artiste</button>
+          <button class="btn-add" onclick="openAddAlbum()">+ Album</button>
+          <button class="btn-add" onclick="openAddSong()">+ Titre</button>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAV (mobile) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="bottom-nav-item active" data-page="home">
+      <svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/></svg>
+      <span>Accueil</span>
+    </button>
+    <button class="bottom-nav-item" data-page="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span>Recherche</span>
+    </button>
+    <button class="bottom-nav-item" data-page="library">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      <span>Librairie</span>
+    </button>
+    <button class="bottom-nav-item" data-page="profile">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profil</span>
+    </button>
+  </nav>
+
+  <!-- MINI PLAYER -->
+  <div class="mini-player" id="mini-player">
+    <div class="mini-player-cover" id="mp-cover">
+      <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+    </div>
+    <div class="mini-player-info">
+      <div class="mp-title" id="mp-title">Aucune lecture</div>
+      <div class="mp-artist" id="mp-artist">—</div>
+    </div>
+    <div class="mini-player-controls">
+      <button class="mp-btn" onclick="playerPrev()">
+        <svg viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+      </button>
+      <button class="mp-btn mp-play" id="mp-play-btn" onclick="playerToggle()">
+        <svg id="mp-play-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+      <button class="mp-btn" onclick="playerNext()">
+        <svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+      </button>
+    </div>
+    <button class="mp-expand" onclick="openFullPlayer()">
+      <svg viewBox="0 0 24 24"><polyline points="18 15 12 9 6 15"/></svg>
+    </button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- FULL PLAYER MODAL -->
+<div class="modal-overlay" id="full-player-overlay" onclick="closeFullPlayer(event)">
+  <div class="full-player">
+    <button class="fp-close" onclick="closeFullPlayer()">
+      <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+    </button>
+    <div class="fp-cover-wrap">
+      <div class="fp-cover" id="fp-cover">
+        <svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+      </div>
+    </div>
+    <div class="fp-info">
+      <h2 class="fp-title" id="fp-title">Titre</h2>
+      <p class="fp-artist" id="fp-artist">Artiste</p>
+    </div>
+    <div class="fp-controls">
+      <button class="fp-btn fp-prev" onclick="playerPrev()">
+        <svg viewBox="0 0 24 24"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+      </button>
+      <button class="fp-btn fp-play-btn" onclick="playerToggle()">
+        <svg id="fp-play-icon" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      </button>
+      <button class="fp-btn fp-next" onclick="playerNext()">
+        <svg viewBox="0 0 24 24"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+      </button>
+    </div>
+    <div class="fp-like">
+      <button class="fp-like-btn" id="fp-like-btn" onclick="toggleCurrentLike()">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERIC MODAL -->
+<div class="modal-overlay" id="generic-modal-overlay" onclick="closeGenericModal(event)">
+  <div class="modal-card" id="generic-modal-card">
+    <h2 class="modal-title" id="modal-title"></h2>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeGenericModal()">Annuler</button>
+      <button class="btn-primary" id="modal-confirm-btn">Confirmer</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -7,55 +7,23 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.50.0/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
 <!-- ══════════════════ AUTH SCREEN ══════════════════ -->
-<div id="auth-screen" class="auth-screen">
-  <div class="auth-bg">
-    <div class="auth-orb orb1"></div>
-    <div class="auth-orb orb2"></div>
-    <div class="auth-orb orb3"></div>
-  </div>
-
-  <div class="auth-wrapper">
-    <div class="auth-logo-top">
-      <span class="logo-act">ACT</span><span class="logo-dash">—</span><span class="logo-iii">III</span>
-      <p class="auth-tagline">Your music. Your story.</p>
+<div id="auth-screen" class="auth-container">
+    <h1>🎵 ACT-III</h1>
+    <p>Entrez vos identifiants pour accéder au flux</p>
+    <div class="auth-form">
+        <input type="text" id="login-username" placeholder="Pseudo (ex: Clem)" required>
+        <input type="text" id="login-code" placeholder="Code ACT3-XXXX" required>
+        <button id="btn-enter" class="btn-primary">Entrer dans l'app</button>
     </div>
-
-    <div class="auth-panels">
-      <!-- CONNEXION -->
-      <div class="auth-panel">
-        <h2 class="auth-panel-title">Connexion</h2>
-        <div class="auth-form-fields">
-          <input type="email" id="login-email" class="auth-input" placeholder="Email" />
-          <input type="password" id="login-password" class="auth-input" placeholder="Mot de passe" />
-          <button class="btn-primary" onclick="authLogin()">Se connecter</button>
-        </div>
-        <div id="auth-message-login" class="auth-message"></div>
-      </div>
-
-      <div class="auth-divider"><span>ou</span></div>
-
-      <!-- INSCRIPTION -->
-      <div class="auth-panel">
-        <h2 class="auth-panel-title">Inscription</h2>
-        <div class="auth-form-fields">
-          <input type="text" id="reg-name" class="auth-input" placeholder="Nom d'affichage" />
-          <input type="email" id="reg-email" class="auth-input" placeholder="Email" />
-          <input type="password" id="reg-password" class="auth-input" placeholder="Mot de passe (min. 6 car.)" />
-          <button class="btn-primary btn-register" onclick="authRegister()">Créer mon compte</button>
-        </div>
-        <div id="auth-message-register" class="auth-message"></div>
-      </div>
-    </div>
-  </div>
+    <p class="auth-note">Pas de mail requis. Les données sont liées au pseudo.</p>
 </div>
-
 <!-- ══════════════════ APP ══════════════════ -->
 <div id="app" class="app hidden">
 

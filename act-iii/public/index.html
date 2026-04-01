@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -21,31 +20,39 @@
     <div class="auth-orb orb2"></div>
     <div class="auth-orb orb3"></div>
   </div>
-  <div class="auth-card">
-    <div class="auth-logo">
+
+  <div class="auth-wrapper">
+    <div class="auth-logo-top">
       <span class="logo-act">ACT</span><span class="logo-dash">—</span><span class="logo-iii">III</span>
-    </div>
-    <p class="auth-tagline">Your music. Your story.</p>
-
-    <div class="auth-tabs">
-      <button class="auth-tab active" data-tab="login">Connexion</button>
-      <button class="auth-tab" data-tab="register">Inscription</button>
+      <p class="auth-tagline">Your music. Your story.</p>
     </div>
 
-    <div id="auth-login" class="auth-form active">
-      <input type="email" id="login-email" class="auth-input" placeholder="Email" />
-      <input type="password" id="login-password" class="auth-input" placeholder="Mot de passe" />
-      <button class="btn-primary" onclick="authLogin()">Se connecter</button>
-    </div>
+    <div class="auth-panels">
+      <!-- CONNEXION -->
+      <div class="auth-panel">
+        <h2 class="auth-panel-title">Connexion</h2>
+        <div class="auth-form-fields">
+          <input type="email" id="login-email" class="auth-input" placeholder="Email" />
+          <input type="password" id="login-password" class="auth-input" placeholder="Mot de passe" />
+          <button class="btn-primary" onclick="authLogin()">Se connecter</button>
+        </div>
+        <div id="auth-message-login" class="auth-message"></div>
+      </div>
 
-    <div id="auth-register" class="auth-form">
-      <input type="text" id="reg-name" class="auth-input" placeholder="Nom d'affichage" />
-      <input type="email" id="reg-email" class="auth-input" placeholder="Email" />
-      <input type="password" id="reg-password" class="auth-input" placeholder="Mot de passe" />
-      <button class="btn-primary" onclick="authRegister()">Créer mon compte</button>
-    </div>
+      <div class="auth-divider"><span>ou</span></div>
 
-    <div id="auth-message" class="auth-message"></div>
+      <!-- INSCRIPTION -->
+      <div class="auth-panel">
+        <h2 class="auth-panel-title">Inscription</h2>
+        <div class="auth-form-fields">
+          <input type="text" id="reg-name" class="auth-input" placeholder="Nom d'affichage" />
+          <input type="email" id="reg-email" class="auth-input" placeholder="Email" />
+          <input type="password" id="reg-password" class="auth-input" placeholder="Mot de passe (min. 6 car.)" />
+          <button class="btn-primary btn-register" onclick="authRegister()">Créer mon compte</button>
+        </div>
+        <div id="auth-message-register" class="auth-message"></div>
+      </div>
+    </div>
   </div>
 </div>
 
